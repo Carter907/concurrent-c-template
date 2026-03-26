@@ -1,48 +1,54 @@
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 
+pthread_mutex_t toy_fox = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t blue_book = PTHREAD_MUTEX_INITIALIZER;
 
+void *tony(void *task_args) {
 
-pthread_mutex_t l1 = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t l2 = PTHREAD_MUTEX_INITIALIZER;
+  pthread_mutex_lock(&blue_book);
+  puts("Tony picked up the blue book, but wants the toy fox.");
 
-void *task1(void *task_args) {	
+  pthread_mutex_lock(&toy_fox);
 
-	pthread_mutex_lock(&l2);	
-	sleep(1); // make sure this task has aquired the initial lock first
-	pthread_mutex_lock(&l1);	
-	puts("task1 executing...");
-	pthread_mutex_unlock(&l1);
-	pthread_mutex_unlock(&l2);
+	puts("Tony plays with blue book and toy fox.");
 
-	return NULL;
+	puts("Tony is done playing and puts the items back where he found them.");
+
+  pthread_mutex_unlock(&toy_fox);
+  pthread_mutex_unlock(&blue_book);
+
+  return NULL;
 }
 
-void *task2(void *task_args) {	
+void *christie(void *task_args) {
 
-	pthread_mutex_lock(&l1);	
-	sleep(1); // make sure this task has aquired the initial lock first
-	pthread_mutex_lock(&l2);	
-	puts("task2 executing...");
-	pthread_mutex_unlock(&l2);
-	pthread_mutex_unlock(&l1);
+  pthread_mutex_lock(&toy_fox);
+  puts("Christie picked up the toy fox, but wants the blue book.");
 
-	return NULL;
+  pthread_mutex_lock(&blue_book);
+
+	puts("Christie plays with blue book and toy fox.");
+
+	puts("Christie is done playing and puts the items back where she found them.");
+
+  pthread_mutex_unlock(&toy_fox);
+  pthread_mutex_unlock(&blue_book);
+
+  return NULL;
 }
 
 int main(void) {
 
-	while (true) {
+  pthread_t tony_thread, christie_thread;
 
-		pthread_t t1, t2;
-		pthread_create(&t1, NULL, task1, NULL);
-		pthread_create(&t2, NULL, task2, NULL);
+  pthread_create(&tony_thread, NULL, tony, NULL);         // start tony
+  pthread_create(&christie_thread, NULL, christie, NULL); // start christie
 
-		pthread_join(t1, NULL);
-		pthread_join(t2, NULL);
-	}
+	for (;;)
+		;
 
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

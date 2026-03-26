@@ -10,10 +10,10 @@ VER = c23
 BUILD_DIR = ./build
 ASM_DIR = ./build/asm
 
-CFLAGS = -std=$(VER) -g -Wall -Werror -Wconversion -fanalyzer -fsanitize=address,undefined,leak -fsanitize-trap=undefined
+CFLAGS = -std=$(VER) -D_REENTRANT -g -Wall -fsanitize=address,undefined,leak
 AFLAGS = -S -masm=intel
 
-LIBS = 
+LIBS = -lpthread
 
 run: build
 	$(BUILD_DIR)/$(PROG_NAME)
