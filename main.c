@@ -2,40 +2,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <semaphore.h>
 
-pthread_mutex_t toy_fox = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t blue_book = PTHREAD_MUTEX_INITIALIZER;
+sem_t toy_fox;
+sem_t blue_book;
 
 void *tony(void *task_args) {
 
-  pthread_mutex_lock(&blue_book);
+  sem_wait(&blue_book);
   puts("Tony picked up the blue book, but wants the toy fox.");
 
-  pthread_mutex_lock(&toy_fox);
+  sem_wait(&toy_fox);
 
 	puts("Tony plays with blue book and toy fox.");
 
 	puts("Tony is done playing and puts the items back where he found them.");
 
-  pthread_mutex_unlock(&toy_fox);
-  pthread_mutex_unlock(&blue_book);
+  sem_post(&toy_fox);
+  sem_post(&blue_book);
 
   return NULL;
 }
 
 void *christie(void *task_args) {
 
-  pthread_mutex_lock(&toy_fox);
+  sem_wait(&toy_fox);
   puts("Christie picked up the toy fox, but wants the blue book.");
 
-  pthread_mutex_lock(&blue_book);
+  sem_wait(&blue_book);
 
 	puts("Christie plays with blue book and toy fox.");
 
 	puts("Christie is done playing and puts the items back where she found them.");
 
-  pthread_mutex_unlock(&toy_fox);
-  pthread_mutex_unlock(&blue_book);
+  sem_post(&toy_fox);
+  sem_post(&blue_book);
 
   return NULL;
 }
@@ -43,12 +44,14 @@ void *christie(void *task_args) {
 int main(void) {
 
   pthread_t tony_thread, christie_thread;
+	sem_init(&toy_fox, 0, 1);
+	sem_init(&blue_book, 0, 1);
 
   pthread_create(&tony_thread, NULL, tony, NULL);         // start tony
   pthread_create(&christie_thread, NULL, christie, NULL); // start christie
 
-	for (;;)
-		;
+	pthread_join(tony_thread, NULL);
+	pthread_join(christie_thread, NULL);
 
   return EXIT_SUCCESS;
 }
